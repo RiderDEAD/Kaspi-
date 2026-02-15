@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Мой Банк</title>
+    <style>
+        :root { 
+            --main-font: "SF Pro Display", "Roboto", "Helvetica Neue", Arial, sans-serif; 
+        }
+        
+        * { 
+            -webkit-tap-highlight-color: transparent; 
+            box-sizing: border-box; 
+            -webkit-user-select: none;
+            -webkit-font-smoothing: subpixel-antialiased;
+        }
+
+        body {
+            font-family: var(--main-font); 
+            margin: 0; 
+            background-color: #F2F2F7;
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden;
+        }
+
+        header {
+            background: white; 
+            padding-top: env(safe-area-inset-top);
+            border-bottom: 0.5px solid #D1D1D6; 
+            display: flex; 
+            align-items: center; 
+            height: calc(64px + env(safe-area-inset-top));
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .back-btn {
+            position: absolute; left: 0; padding: 0 16px;
+            font-size: 34px; line-height: 1; text-decoration: none;
+            color: #000; font-weight: 200; display: flex;
+            align-items: center; height: 100%; z-index: 10;
+        }
+
+        .title { 
+            width: 100%; text-align: center; 
+            font-size: 19px; font-weight: 600; color: #000; 
+        }
+
+        .content { 
+            padding: 16px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            padding-bottom: 100px; 
+        }
+        
+        .card-link { text-decoration: none; color: inherit; display: block; }
+        .card-link:active { opacity: 0.7; }
+
+        .card {
+            background: white; border-radius: 16px; padding: 16px;
+            display: flex; align-items: flex-start; justify-content: space-between;
+        }
+        
+        .card-left { display: flex; align-items: center; gap: 12px; }
+        
+        .icon-rect { 
+            width: 42px; height: 32px; border-radius: 6px; 
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+
+        .icon-gold { background-color: #E2AD61; }
+        .icon-bonus { background-color: #55B54D; }
+        .icon-gold img { width: 55%; height: auto; object-fit: contain; }
+
+        .name { font-size: 19px; font-weight: 400; color: #000; letter-spacing: -0.2px; line-height: 1.2; }
+        .sub { font-size: 14px; color: #8E8E93; margin-top: 1px; }
+        .balance { font-size: 21px; font-weight: 400; color: #000; letter-spacing: -0.2px; margin-top: -2px; }
+        
+        .btn-add {
+            background: white; border-radius: 16px; padding: 16px 18px;
+            color: #007AFF; font-size: 17px; font-weight: 600; 
+            text-decoration: none; display: flex; align-items: center; gap: 12px;
+        }
+        
+        .plus-container {
+            width: 30px; height: 30px;
+            background: rgba(0, 122, 255, 0.1); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .plus { font-size: 24px; font-weight: 400; margin-top: -2px; }
+
+        /* ТАББАР ИСПРАВЛЕННЫЙ */
+        nav.tab-bar {
+            background: #fff;
+            border-top: 0.5px solid #D1D1D6;
+            display: flex;
+            justify-content: space-around;
+            padding-bottom: env(safe-area-inset-bottom);
+            height: calc(60px + env(safe-area-inset-bottom)); /* Компактная высота */
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 100;
+        }
+
+        .tab-item {
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center; 
+            color: #8E8E93; 
+            text-decoration: none;
+            width: 20%;
+            padding-top: 6px;
+        }
+
+        /* Жесткие размеры для иконок, чтобы не бесили */
+        .tab-item img {
+            width: 26px; 
+            height: 26px; 
+            object-fit: contain;
+            margin-bottom: 3px;
+        }
+
+        .tab-item span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .tab-item.active { color: #000; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn">‹</a>
+        <div class="title">Мой Банк</div>
+    </header>
+
+    <div class="content">
+        <a href="gold_details.html" class="card-link">
+            <div class="card">
+                <div class="card-left">
+                    <div class="icon-rect icon-gold">
+                        <img src="gold_mini.svg">
+                    </div>
+                    <div>
+                        <div class="name">Kaspi Gold</div>
+                        <div class="sub">• 8255</div>
+                    </div>
+                </div>
+                <div class="balance" id="goldBalance">1 049,65 ₸</div>
+            </div>
+        </a>
+
+        <a href="#" class="btn-add">
+            <div class="plus-container"><span class="plus">+</span></div>
+            Открыть депозит
+        </a>
+
+        <div class="card">
+            <div class="card-left">
+                <div class="icon-rect icon-bonus">
+                    <div style="color: white; font-weight: 500; font-size: 17px;">Б</div>
+                </div>
+                <div class="name">Kaspi Бонус</div>
+            </div>
+            <div class="balance">0 Б</div>
+        </div>
+    </div>
+
+    <nav class="tab-bar">
+        <a href="index.html" class="tab-item active">
+            <img src="home_on.png">
+            <span>Главная</span>
+        </a>
+        <a href="#" class="tab-item">
+            <img src="qr_bottom.png">
+            <span>Kaspi QR</span>
+        </a>
+        <a href="#" class="tab-item">
+            <img src="chat.png">
+            <span>Сообщения</span>
+        </a>
+        <a href="#" class="tab-item">
+            <img src="menu.png">
+            <span>Сервисы</span>
+        </a>
+    </nav>
+
+    <script>
+        const DEFAULT_BALANCE = "221 455,25";
+        function syncBalance() {
+            const balance = localStorage.getItem('kaspi_gold_balance') || DEFAULT_BALANCE;
+            document.getElementById('goldBalance').innerText = balance + " ₸";
+        }
+        syncBalance();
+        window.addEventListener('storage', syncBalance);
+    </script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Госуслуги</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root { --main-font: "SF Pro Display", -apple-system, sans-serif; }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; -webkit-user-select: none; outline: none; }
+        
+        body {
+            font-family: var(--main-font); margin: 0; background-color: #F2F2F7;
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+            transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+        }
+        body.page-visible { transform: translateX(0); }
+
+        /* ФИКСИРОВАННАЯ ШАПКА */
+        header { 
+            background: white; 
+            padding-top: env(safe-area-inset-top); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
+            border-bottom: 0.5px solid #D1D1D6;
+        }
+        .nav-top { height: 44px; display: flex; align-items: center; padding: 0 16px; }
+        .back-ic { font-size: 28px; color: #333; text-decoration: none; font-weight: 300; }
+        .title-top { flex-grow: 1; text-align: center; font-size: 17px; font-weight: 600; margin-right: 28px; }
+
+        .segment-container { padding: 8px 16px 12px; }
+        .segments { display: flex; background: #EBECEE; border-radius: 9px; padding: 2px; }
+        .segment { flex: 1; text-align: center; padding: 6px 0; font-size: 14px; font-weight: 500; border-radius: 7px; color: #212121; }
+        .segment.active { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        .search-container { padding: 0 16px 12px; }
+        .search-box { background: #E3E4E9; border-radius: 10px; padding: 8px 12px; display: flex; align-items: center; color: #8E8E93; font-size: 16px; }
+        .search-box svg { margin-right: 8px; opacity: 0.5; }
+
+        /* СКРОЛЛ-ЗОНА */
+        .main-scroll { 
+            flex: 1; 
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch; 
+        }
+
+        /* Плитки документов */
+        .docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+        .doc-card { 
+            background: #E5E7EB; border-radius: 18px; padding: 16px; min-height: 110px; 
+            display: flex; flex-direction: column; justify-content: space-between; 
+            text-decoration: none; color: inherit;
+        }
+        .doc-card img { width: 44px; height: 32px; border-radius: 4px; object-fit: cover; }
+        .doc-title { font-size: 15px; font-weight: 500; line-height: 1.2; color: #333; margin-top: 8px; }
+        
+        .all-docs-link { 
+            padding: 0 16px; color: #0057B8; font-size: 17px; font-weight: 500; 
+            display: flex; align-items: center; justify-content: space-between; text-decoration: none; 
+        }
+        .menu-icon { width: 28px; height: 28px; margin-right: 16px; object-fit: contain; }
+
+        /* Категории */
+        .cat-row { display: flex; overflow-x: auto; padding: 24px 16px; gap: 20px; scrollbar-width: none; }
+        .cat-row::-webkit-scrollbar { display: none; }
+        .cat-item { display: flex; flex-direction: column; align-items: center; min-width: 75px; text-align: center; }
+        .cat-icon { width: 56px; height: 56px; border-radius: 16px; background: #E5E7EB; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; font-size: 24px; }
+        .cat-label { font-size: 13px; color: #212121; }
+        .cat-item.active .cat-label { color: #E31E24; font-weight: 500; }
+        .cat-item.active .cat-icon::after { content: ''; position: absolute; bottom: -12px; left: 10%; width: 80%; height: 2px; background: #E31E24; }
+
+        /* Список */
+        .list-section { background: white; border-radius: 20px 20px 0 0; margin-top: 10px; padding: 16px 16px 120px 16px; }
+        .section-h2 { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+        .list-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 0.5px solid #F2F2F7; position: relative; }
+        .li-icon { width: 32px; color: #0057B8; margin-right: 12px; font-size: 20px; }
+        .li-content { flex-grow: 1; padding-right: 60px; }
+        .li-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+        .li-sub { font-size: 13px; color: #8E8E93; line-height: 1.3; }
+        .new-tag { position: absolute; right: 25px; background: #E31E24; color: white; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; }
+        .chevron-r { position: absolute; right: 0; color: #C7C7CC; font-size: 18px; }
+
+        /* ФИКСИРОВАННЫЙ ТАББАР */
+        .tab-bar { 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            height: 60px; 
+            background: white; 
+            border-top: 0.5px solid #D1D1D6; 
+            display: flex; 
+            justify-content: space-around; 
+            padding-bottom: env(safe-area-inset-bottom); 
+            z-index: 100; 
+        }
+        .tab-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; color: #8E8E93; font-size: 10px; }
+        .tab-item img { width: 24px; height: 24px; margin-bottom: 2px; }
+        .tab-item.active { color: #E31E24; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="nav-top">
+        <a href="index.html" id="backBtn" class="back-ic">‹</a>
+        <div class="title-top">Госуслуги</div>
+    </div>
+    <div class="segment-container">
+        <div class="segments">
+            <div class="segment active">Все услуги</div>
+            <div class="segment">Мои заявки</div>
+        </div>
+    </div>
+    <div class="search-container">
+        <div class="search-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Поиск по Госуслугам
+        </div>
+    </div>
+</header>
+
+<div class="main-scroll">
+    <div class="docs-grid">
+        <a href="id_card.html" class="doc-card">
+            <img src="udos.png">
+            <div class="doc-title">Удостоверение личности</div>
+        </a>
+        <div class="doc-card">
+            <img src="student.png">
+            <div class="doc-title">Студенческий билет</div>
+        </div>
+    </div>
+    
+    <a href="documents.html" class="all-docs-link">
+        Все документы <span>›</span>
+    </a>
+
+    <div class="cat-row">
+        <div class="cat-item active"><div class="cat-icon">📢</div><div class="cat-label">Популярные</div></div>
+        <div class="cat-item"><div class="cat-icon">📑</div><div class="cat-label">Справки</div></div>
+        <div class="cat-item"><div class="cat-icon">🚗</div><div class="cat-label">Авто</div></div>
+        <div class="cat-item"><div class="cat-icon">🏠</div><div class="cat-label">Жилье</div></div>
+    </div>
+
+    <div class="list-section">
+        <div class="section-h2">Популярные и новые</div>
+        <div class="list-item">
+            <img src="https://static.cdn-kaspi.kz/ds/core-icons/relatives-protection-logo-500.svg" class="menu-icon">
+            <div class="li-content">
+                <div class="li-title">Стать самозанятым</div>
+                <div class="li-sub">Открыть счет и начать принимать оплату в Kaspi.kz</div>
+            </div>
+            <div class="new-tag">NEW</div>
+            <div class="chevron-r">›</div>
+        </div>
+        <div class="list-item">
+            <div class="li-icon">📝</div>
+            <div class="li-content">
+                <div class="li-title">Изменение реквизитов</div>
+                <div class="li-sub">Подать заявку на изменение данных</div>
+            </div>
+            <div class="new-tag">NEW</div>
+            <div class="chevron-r">›</div>
+        </div>
+    </div>
+</div>
+
+<nav class="tab-bar">
+    <a href="index.html" class="tab-item"><img src="home_on.png">Главная</a>
+    <a href="#" class="tab-item"><img src="qr_bottom.png">Kaspi QR</a>
+    <a href="#" class="tab-item"><img src="chat.png">Сообщения</a>
+    <a href="#" class="tab-item active"><img src="menu.png">Сервисы</a>
+</nav>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.setHeaderColor('#ffffff');
+
+    window.onload = () => { setTimeout(() => document.body.classList.add('page-visible'), 50); };
+
+    document.getElementById('backBtn').onclick = function(e) {
+        e.preventDefault();
+        tg.HapticFeedback.impactOccurred('light');
+        document.body.classList.remove('page-visible');
+        setTimeout(() => window.location.href = this.href, 350);
+    };
+
+    document.querySelectorAll('.list-item, .cat-item, .doc-card, .segment').forEach(el => {
+        el.onclick = () => tg.HapticFeedback.selectionChanged();
+    });
+</script>
+
+</body>
+</html>

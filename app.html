@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kaspi Super App Gold Edition</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        /* ===== ЦВЕТОВАЯ ПАЛИТРА И ПЕРЕМЕННЫЕ ===== 
+        */
+        :root {
+            --kaspi-red: #f14635;
+            --kaspi-blue: #0089d0;
+            --kaspi-gold: #E2AD61;
+            --bg-gray: #F2F2F7;
+            --text-main: #212121;
+            --text-sec: #8E8E93;
+            --white: #ffffff;
+            --border: #D1D1D6;
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* ===== ГЛОБАЛЬНЫЙ СБРОС ===== 
+        */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+            outline: none;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            height: 100vh; width: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Roboto", sans-serif;
+            background-color: var(--bg-gray);
+            overflow: hidden;
+            color: var(--text-main);
+        }
+
+        /* ===== АРХИТЕКТУРА ЭКРАНОВ ===== 
+        */
+        #app-viewport {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
+            flex-direction: column;
+            background: var(--bg-gray);
+            z-index: 10;
+        }
+
+        .screen.active { display: flex; z-index: 20; }
+
+        /* Анимации переходов */
+        .anim-slide-in { animation: slideIn 0.35s cubic-bezier(0.1, 0.7, 0.1, 1); }
+        .anim-fade-in { animation: fadeIn 0.2s ease; }
+
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ===== КОМПОНЕНТЫ: ШАПКА И ТАББАР ===== 
+        */
+        header {
+            flex-shrink: 0;
+            background: var(--white);
+            padding-top: var(--safe-top);
+            border-bottom: 0.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            min-height: calc(50px + var(--safe-top));
+        }
+
+        .header-left { width: 50px; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; }
+        .header-title { flex: 1; text-align: center; font-weight: 700; font-size: 17px; }
+        .header-right { width: 50px; }
+
+        .tab-bar {
+            position: fixed;
+            bottom: 0; width: 100%;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(10px);
+            border-top: 0.5px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding-bottom: var(--safe-bottom);
+            height: calc(60px + var(--safe-bottom));
+            z-index: 1000;
+        }
+
+        .tab-item {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; font-size: 10px; color: var(--text-sec);
+            width: 20%; transition: color 0.2s;
+        }
+        .tab-item.active { color: var(--kaspi-red); }
+        .tab-item i { font-size: 22px; margin-bottom: 3px; }
+        .tab-item img { width: 24px; height: 24px; margin-bottom: 3px; }
+
+        /* ===== КОМПОНЕНТЫ: UI КАРТОЧКИ ===== 
+        */
+        .content-scroll { flex: 1; overflow-y: auto; padding-bottom: 100px; }
+
+        .card-white {
+            background: var(--white);
+            margin: 12px 16px;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .list-item {
+            display: flex; align-items: center;
+            padding: 14px 0; border-bottom: 0.5px solid #F2F2F7;
+        }
+        .list-item:last-child { border-bottom: none; }
+        .list-icon { width: 35px; height: 35px; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .list-text { flex: 1; }
+        .list-title { font-size: 15px; font-weight: 500; }
+        .list-sub { font-size: 13px; color: var(--text-sec); }
+        .chevron { color: var(--border); font-size: 18px; }
+
+        /* ===== СПЕЦИФИЧЕСКИЕ СТИЛИ ===== 
+        */
+        /* FaceID Оверлей */
+        #faceid-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.98); z-index: 2000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #faceid-video { 
+            width: 120px; 
+            height: 120px; 
+            border-radius: 30px; /* Скругление как у иконки FaceID */
+            border: 3px solid var(--kaspi-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; border-color: var(--kaspi-blue); }
+            50% { transform: scale(1.05); opacity: 0.7; border-color: #73D13D; }
+            100% { transform: scale(1); opacity: 1; border-color: var(--kaspi-blue); }
+        }
+
+        /* Спец-блоки для Переводов */
+        .input-sum { font-size: 36px; font-weight: 700; border: none; width: 100%; text-align: center; padding: 20px 0; }
+        .btn-main {
+            background: var(--kaspi-red); color: var(--white);
+            border: none; border-radius: 8px; padding: 16px;
+            font-size: 16px; font-weight: 600; width: calc(100% - 32px);
+            margin: 16px; cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="faceid-overlay">
+        <div id="faceid-video">
+            <span style="font-size: 50px;">👤</span> 
+        </div>
+        <div style="margin-top: 20px; font-size: 17px; font-weight: 600; letter-spacing: -0.4px;">Face ID</div>
+    </div>
+
+    <div id="app-viewport">
+
+        <div id="screen-home" class="screen active">
+            <header>
+                <div class="header-left"></div>
+                <div class="header-title" style="color: var(--kaspi-red); font-size: 22px; font-weight: 900;">Kaspi.kz</div>
+                <div class="header-right"></div>
+            </header>
+            <div class="content-scroll">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 16px; background: white;">
+                    <div class="tab-item" onclick="startAuth('screen-bank')" style="width: 100%; color: black;">
+                        <img src="bank.png"><span>Мой Банк</span>
+                    </div>
+                    <div class="tab-item" onclick="navigateTo('screen-qr')" style="width: 100%; color: black;">
+                        <img src="qr.png"><span>Kaspi QR</span>
+                    </div>
+                    <div class="tab-item" onclick="startAuth('screen-transfer')" style="width: 100%; color: black;">
+                        <img src="trans.png"><span>Переводы</span></div>
+                    <div class="tab-item" style="width: 100%; color: black;">
+                        <img src="pay.png"><span>Платежи</span>
+                    </div>
+                </div>
+
+                <div class="card-white" style="padding: 0; overflow: hidden; height: 180px;">
+                    <img src="red.png" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+
+                <div class="card-white">
+                    <div class="list-item" onclick="startAuth('screen-transfer', {name: 'Марат А.'})">
+                        <div class="list-icon">👤</div>
+                        <div class="list-text">
+                            <div class="list-title">Марат А.</div>
+                            <div class="list-sub">Вчера • 5 500 ₸</div>
+                        </div>
+                        <div class="chevron">›</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-bank" class="screen anim-slide-in">
+            <header>
+                <div class="header-left" onclick="goBack()">←</div>
+                <div class="header-title">Мой Банк</div>
+                <div class="header-right"></div>
+            </header>
+            <div class="content-scroll">
+                <div class="card-white" style="background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <div style="color: var(--text-sec); font-size: 14px;">Kaspi Gold</div>
+                            <div style="font-size: 26px; font-weight: 800; margin: 5px 0;" id="bank-gold-balance">221 455,25 ₸</div>
+                        </div>
+                        <img src="gold_card.png" style="width: 45px;">
+                    </div>
+                    <div style="margin-top: 15px; color: var(--kaspi-blue); font-size: 14px; font-weight: 600;">ИНФО • ВЫПИСКА</div>
+                </div>
+
+                <div class="card-white">
+                    <div class="list-item">
+                        <div class="list-icon" style="background: #73D13D; color: white; border-radius: 6px; width: 30px; height: 30px;">Б</div>
+                        <div class="list-text" style="margin-left: 10px;"><div class="list-title">Kaspi Бонус</div></div>
+                        <div style="font-weight: 700;">5 400 Б</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-transfer" class="screen anim-slide-in">
+            <header>
+                <div class="header-left" onclick="goBack()">←</div>
+                <div class="header-title">Перевод</div>
+                <div class="header-right"></div>
+            </header>
+            <div class="content-scroll">
+                <div class="card-white" style="text-align: center;">
+                    <div style="color: var(--text-sec); margin-bottom: 10px;" id="transfer-target-name">Клиенту Kaspi</div>
+                    <input type="number" class="input-sum" id="sum-input" placeholder="0" autofocus>
+                    <div style="color: var(--text-sec); font-size: 14px;">Комиссия 0 ₸</div>
+                </div>
+                
+                <div class="card-white">
+                    <div style="font-size: 13px; color: var(--text-sec);">Счет списания</div>
+                    <div class="list-item">
+                        <div class="list-icon">💳</div>
+                        <div class="list-text"><div class="list-title">Kaspi Gold</div></div>
+                        <div id="transfer-current-balance">221 455,25 ₸</div>
+                    </div>
+                </div>
+                
+                <button class="btn-main" onclick="processTransfer()">Перевести</button>
+            </div>
+        </div>
+
+        <div id="screen-success" class="screen anim-fade-in" style="background: white; align-items: center; justify-content: center;">
+            <div style="width: 80px; height: 80px; background: #73D13D; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; margin-bottom: 20px;">✓</div>
+            <div style="font-size: 22px; font-weight: 700; margin-bottom: 10px;">Перевод совершен!</div>
+            <div style="color: var(--text-sec); margin-bottom: 30px;" id="success-amount">0 ₸</div>
+            <button class="btn-main" onclick="navigateTo('screen-home')" style="width: 200px;">Готово</button>
+        </div>
+
+        <div id="screen-services" class="screen anim-slide-in">
+            <header>
+                <div class="header-left" onclick="goBack()">←</div>
+                <div class="header-title">Госуслуги</div>
+                <div class="header-right"></div>
+            </header>
+            <div class="content-scroll">
+                <div class="card-white">
+                    <div class="list-item" onclick="navigateTo('screen-id')">
+                        <div class="list-icon">🛡️</div>
+                        <div class="list-text">
+                            <div class="list-title">Цифровые документы</div>
+                            <div class="list-sub">Удостоверение, права, паспорта</div>
+                        </div>
+                        <div class="chevron">›</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-id" class="screen anim-slide-in" style="background: #fff;">
+            <header>
+                <div class="header-left" onclick="goBack()">←</div>
+                <div class="header-title">Удостоверение</div>
+                <div class="header-right"></div>
+            </header>
+            <div style="flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                <div id="id-wrapper" style="transition: transform 0.1s; touch-action: none;">
+                    <img src="id_front.png" style="width: 90vw; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                </div>
+            </div>
+            <div style="padding: 20px; text-align: center; color: var(--kaspi-blue); font-weight: 600;">
+                Предъявите QR-код или передайте данные
+            </div>
+        </div>
+
+        <div id="screen-qr" class="screen anim-fade-in" style="background: #000;">
+            <div id="qr-reader" style="width: 100%; height: 100%;"></div>
+            <div style="position: absolute; top: var(--safe-top); left: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; z-index: 100;">
+                <div style="color: white; font-size: 24px;" onclick="goBack()">×</div>
+                <div style="color: white; font-weight: 600;">Kaspi QR</div>
+                <div style="width: 24px;"></div>
+            </div>
+            <div style="position: absolute; bottom: 100px; width: 100%; text-align: center; color: white; z-index: 100;">
+                Сканируйте QR-код и платите без карты
+            </div>
+        </div>
+
+    </div>
+
+    <nav class="tab-bar" id="app-tab-bar">
+        <div class="tab-item active" id="tab-home" onclick="navigateTo('screen-home')">
+            <img src="home_on.png"><span>Главная</span>
+        </div>
+        <div class="tab-item" onclick="navigateTo('screen-qr')">
+            <img src="qr_bottom.png"><span>Kaspi QR</span>
+        </div>
+        <div class="tab-item">
+            <img src="chat.png"><span>Сообщения</span>
+        </div>
+        <div class="tab-item" onclick="navigateTo('screen-services')">
+            <img src="menu.png"><span>Сервисы</span>
+        </div>
+    </nav>
+
+    <script>
+        /* ===== ЛОГИКА ПРИЛОЖЕНИЯ ===== 
+        */
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        let state = {
+            balance: 221455.25,
+            history: ['screen-home'],
+            currentData: {}
+        };
+
+        // 1. Управление экранами
+        function navigateTo(screenId, data = {}) {
+            state.currentData = data;
+            
+            // Скрываем все
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            
+            // Показываем нужный
+            const target = document.getElementById(screenId);
+            target.classList.add('active');
+
+            // Стек истории
+            if (state.history[state.history.length - 1] !== screenId) {
+                state.history.push(screenId);
+            }
+
+            // Настройка UI в зависимости от экрана
+            const tabBar = document.getElementById('app-tab-bar');
+            if (['screen-id', 'screen-qr', 'screen-transfer', 'screen-success'].includes(screenId)) {
+                tabBar.style.display = 'none';
+            } else {
+                tabBar.style.display = 'flex';
+            }
+
+            // Спец-инициализация для экранов
+            if (screenId === 'screen-transfer') {
+                document.getElementById('transfer-target-name').innerText = data.name || "Клиенту Kaspi";
+                document.getElementById('sum-input').value = "";
+                document.getElementById('sum-input').focus();
+            }
+
+            if (screenId === 'screen-qr') startQR();
+            else stopQR();
+
+            updateTGBackButton();
+        }
+
+        function goBack() {
+            if (state.history.length > 1) {
+                state.history.pop();
+                const prev = state.history[state.history.length - 1];
+                navigateTo(prev);
+            }
+        }
+
+        function updateTGBackButton() {
+            if (state.history.length > 1) tg.BackButton.show();
+            else tg.BackButton.hide();
+        }
+
+        tg.BackButton.onClick(goBack);
+
+        // 2. FaceID Логика
+        function startAuth(targetScreen, data = {}) {
+    const overlay = document.getElementById('faceid-overlay');
+    overlay.style.display = 'flex';
+
+    // Имитируем задержку сканирования 1.5 секунды
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        tg.HapticFeedback.notificationOccurred('success');
+        navigateTo(targetScreen, data);
+    }, 1500); 
+}
+
+        // 3. Логика перевода
+        function processTransfer() {
+            const sumInput = document.getElementById('sum-input').value;
+            const amount = parseFloat(sumInput);
+
+            if (!amount || amount <= 0) {
+                tg.HapticFeedback.notificationOccurred('error');
+                return;
+            }
+
+            if (amount > state.balance) {
+                alert("Недостаточно средств");
+                return;
+            }
+
+            // Списываем деньги
+            state.balance -= amount;
+            updateBalanceUI();
+
+            // Переходим на экран успеха
+            document.getElementById('success-amount').innerText = amount.toLocaleString('ru-RU') + " ₸";
+            navigateTo('screen-success');
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+
+        function updateBalanceUI() {
+            const formatted = state.balance.toLocaleString('ru-RU', { minimumFractionDigits: 2 }) + " ₸";
+            document.getElementById('bank-gold-balance').innerText = formatted;
+            document.getElementById('transfer-current-balance').innerText = formatted;
+            localStorage.setItem('kaspi_gold_balance', state.balance);
+        }
+
+        // 4. QR Сканер
+        let html5QrCode;
+        function startQR() {
+            html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: 250 },
+                (decodedText) => {
+                    tg.HapticFeedback.impactOccurred('medium');
+                    stopQR();
+                    alert("QR Сканирован: " + decodedText);
+                    goBack();
+                }
+            ).catch(err => console.error("QR Error", err));
+        }
+
+        function stopQR() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => html5QrCode.clear());
+            }
+        }
+
+        // 5. Умный Зум для ID
+        const wrapper = document.getElementById('id-wrapper');
+        let initialDist = 0;
+        let scale = 1;
+
+        wrapper.addEventListener('touchstart', e => {
+            if (e.touches.length === 2) {
+                initialDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+            }
+        });
+
+        wrapper.addEventListener('touchmove', e => {
+            if (e.touches.length === 2) {
+                const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                scale = Math.min(Math.max(1, dist / initialDist), 3);
+                wrapper.style.transform = `scale(${scale})`;
+            }
+        });
+
+        wrapper.addEventListener('touchend', () => {
+            wrapper.style.transform = `scale(1)`;
+        });
+
+        // Инициализация
+        window.onload = () => {
+            const saved = localStorage.getItem('kaspi_gold_balance');
+            if (saved) state.balance = parseFloat(saved);
+            updateBalanceUI();
+            
+            // Скрыть сплэш-скрин если он есть
+            tg.ready();
+        };
+
+    </script>
+</body>
+</html>

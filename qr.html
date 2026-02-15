@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kaspi QR</title>
+    <script src="jsQR.js"></script>
+    <style>
+        :root {
+            --kaspi-red: #f14635;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: #000; font-family: -apple-system, sans-serif; overflow: hidden;
+        }
+
+        #video {
+            width: 100%; height: 100%; object-fit: cover;
+            position: fixed; top: 0; left: 0;
+        }
+
+        canvas { display: none; }
+
+        .ui-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; display: flex; flex-direction: column; align-items: center;
+            pointer-events: none;
+            /* Затемнение вокруг углов */
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .top-bar {
+            width: 100%; height: 60px; display: flex; align-items: center;
+            padding: 0 20px; box-sizing: border-box; pointer-events: auto;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .title { color: white; flex-grow: 1; text-align: center; font-weight: 600; font-size: 18px; }
+        
+        .close { 
+            color: white; font-size: 28px; text-decoration: none; 
+            width: 40px; text-align: center; line-height: 40px;
+        }
+
+        .scan-text {
+            color: white; margin-top: 10vh; font-size: 18px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* КОНТЕЙНЕР ДЛЯ УГОЛКОВ */
+        .scan-area {
+            margin-top: 5vh;
+            width: 260px;
+            height: 260px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Общие свойства для всех уголков */
+        .corner {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--kaspi-red);
+            border-radius: 12px;
+        }
+
+        /* Позиционирование каждого угла индивидуально */
+        .top-left {
+            top: 0; left: 0;
+            border-right: none; border-bottom: none;
+            border-bottom-left-radius: 0; border-top-right-radius: 0;
+        }
+
+        .top-right {
+            top: 0; right: 0;
+            border-left: none; border-bottom: none;
+            border-bottom-right-radius: 0; border-top-left-radius: 0;
+        }
+
+        .bottom-left {
+            bottom: 0; left: 0;
+            border-right: none; border-top: none;
+            border-top-left-radius: 0; border-bottom-right-radius: 0;
+        }
+
+        .bottom-right {
+            bottom: 0; right: 0;
+            border-left: none; border-top: none;
+            border-top-right-radius: 0; border-bottom-left-radius: 0;
+        }
+
+        .torch-btn {
+            position: absolute; bottom: 10vh;
+            width: 65px; height: 65px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%; border: none;
+            pointer-events: auto; display: flex; align-items: center; justify-content: center;
+        }
+
+        .torch-icon { fill: white; width: 28px; }
+    </style>
+</head>
+<body>
+
+    <video id="video" playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <div class="ui-overlay">
+        <div class="top-bar">
+            <div style="width: 40px;"></div>
+            <div class="title">Kaspi QR</div>
+            <a href="services.html" class="close">×</a>
+        </div>
+        
+        <div class="scan-text">Сканируйте QR-код</div>
+        
+        <div class="scan-area">
+            <div class="corner top-left"></div>
+            <div class="corner top-right"></div>
+            <div class="corner bottom-left"></div>
+            <div class="corner bottom-right"></div>
+        </div>
+
+        <button class="torch-btn" id="torch">
+            <svg class="torch-icon" viewBox="0 0 24 24">
+                <path d="M7,2H17V5H7V2M19,9V11H5V9L8,6H16L19,9M16,11L15.5,22H8.5L8,11H16Z" />
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        const video = document.getElementById("video");
+        const canvasElement = document.getElementById("canvas");
+        const canvas = canvasElement.getContext("2d", { willReadFrequently: true });
+        const torchBtn = document.getElementById("torch");
+        let track = null;
+
+        // Запуск камеры
+        navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "environment", focusMode: "continuous" } 
+        }).then(function(stream) {
+            video.srcObject = stream;
+            track = stream.getVideoTracks()[0];
+            video.play();
+            requestAnimationFrame(tick);
+        }).catch(err => alert("Ошибка камеры: " + err));
+
+        function tick() {
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvasElement.height = video.videoHeight;
+                canvasElement.width = video.videoWidth;
+                canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+                
+                const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+
+                if (code) {
+                    if (window.navigator.vibrate) window.navigator.vibrate(100);
+                    // Переход на страницу подтверждения
+                    window.location.href = 'qr_conf.html';
+                    return; 
+                }
+            }
+            requestAnimationFrame(tick);
+        }
+
+        // Логика фонарика
+        let torchOn = false;
+        torchBtn.addEventListener('click', async () => {
+            if (!track) return;
+            torchOn = !torchOn;
+            try {
+                await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+            } catch (e) {
+                console.log("Фонарик не поддерживается на этом устройстве");
+            }
+        });
+    </script>
+</body>
+</html>

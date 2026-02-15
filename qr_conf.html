@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Оплата</title>
+    <style>
+        :root {
+            --kaspi-blue: #0089d0;
+            --kaspi-gray: #f2f2f2;
+            --kaspi-green: #00b341;
+            --text-main: #2b2b2b;
+            --text-secondary: #8e8e93;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #ffffff; color: var(--text-main);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* --- Header --- */
+        .header { padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; height: 50px; }
+        .header-title { font-size: 18px; font-weight: 600; position: absolute; left: 50%; transform: translateX(-50%); }
+        .close-btn { font-size: 24px; color: #000; text-decoration: none; margin-left: auto; padding: 5px; }
+
+        /* --- Content --- */
+        .main-content { padding: 20px 16px; flex-grow: 1; }
+        .label { color: var(--text-secondary); font-size: 14px; margin-bottom: 4px; display: block; }
+        .seller-section { margin-bottom: 30px; }
+        .seller-name { font-size: 17px; font-weight: 500; }
+
+        .input-section { background-color: var(--kaspi-gray); border-radius: 12px; padding: 12px 16px; }
+        .amount-input-wrapper { display: flex; align-items: baseline; }
+        #amount-input { 
+            background: transparent; border: none; outline: none; 
+            font-size: 32px; font-weight: bold; width: 100%; 
+            font-family: inherit; color: var(--text-main);
+        }
+
+        .footer { padding: 16px; padding-bottom: env(safe-area-inset-bottom, 20px); }
+        .btn-pay { 
+            width: 100%; background-color: var(--kaspi-blue); color: white; 
+            border: none; padding: 16px; border-radius: 12px; 
+            font-size: 16px; font-weight: 600; cursor: pointer;
+        }
+        .btn-pay:disabled { background-color: #a0d4ef; }
+
+        /* --- Bottom Sheet --- */
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 100;
+            display: none; opacity: 0; transition: opacity 0.3s;
+        }
+
+        #bottom-sheet {
+            position: fixed; bottom: -100%; left: 0; width: 100%;
+            background: white; border-top-left-radius: 20px; border-top-right-radius: 20px;
+            z-index: 101; transition: bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+            box-sizing: border-box;
+        }
+
+        .sheet-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+        .sheet-content { padding: 20px 16px; }
+        
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 15px; }
+        .bonus-text { color: var(--kaspi-green); font-weight: 500; }
+        
+        .message-box {
+            background-color: var(--kaspi-gray); border-radius: 10px;
+            padding: 12px; margin-bottom: 20px; display: flex; justify-content: space-between;
+            color: var(--text-secondary); font-size: 14px;
+        }
+
+        .payment-method {
+            display: flex; align-items: center; background: var(--kaspi-gray);
+            padding: 12px; border-radius: 10px; margin: 15px 0;
+        }
+        .method-icon { width: 24px; height: 24px; background: #f1ba12; border-radius: 50%; margin-right: 10px; }
+        
+        .final-btn {
+            width: 100%; background: var(--kaspi-blue); color: white; border: none;
+            padding: 18px; border-radius: 12px; font-size: 18px; font-weight: 600; 
+            margin-top: 10px; cursor: pointer; display: block; text-align: center;
+        }
+
+        #overlay.active { display: block; opacity: 1; }
+        #bottom-sheet.active { bottom: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-title">Оплата</div>
+        <a href="services.html" class="close-btn">✕</a>
+    </div>
+
+    <div class="main-content">
+        <div class="seller-section">
+            <span class="label">Продавец</span>
+            <div class="seller-name">ТОО DV Shirin ДВ Ширин</div>
+        </div>
+        <div class="input-section">
+            <span class="label">Сумма</span>
+            <div class="amount-input-wrapper">
+                <input type="number" id="amount-input" placeholder="0" inputmode="decimal">
+                <span style="font-size: 28px; font-weight: bold; margin-left: 8px;">₸</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <button class="btn-pay" id="pay-button" disabled>Продолжить</button>
+    </div>
+
+    <div id="overlay"></div>
+
+    <div id="bottom-sheet">
+        <div class="sheet-header">
+            <span style="font-weight: 600; font-size: 17px;">Оплата</span>
+            <span id="close-sheet" style="font-size: 24px; cursor: pointer;">✕</span>
+        </div>
+        <div class="sheet-content">
+            <div class="message-box">
+                <span>Сообщение продавцу</span>
+                <span>0/100</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Продавец</span>
+                <span style="font-weight: 500; text-align: right;">ТОО DV Shirin ДВ Ширин</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Сумма</span>
+                <span id="display-amount" style="font-weight: 500;">0 ₸</span>
+            </div>
+            <div class="info-row">
+                <span class="bonus-text">Потратить бонусы</span>
+                <span style="color: var(--text-secondary);">Накоплено 0 Б</span>
+            </div>
+            
+            <div class="label" style="margin-top: 20px;">Способ оплаты</div>
+            <div class="payment-method">
+                <div class="method-icon"></div>
+                <div style="flex-grow: 1;">
+                    <div style="font-weight: 500;">Kaspi Gold</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">56,65 ₸</div>
+                </div>
+                <span style="color: var(--kaspi-blue); font-size: 14px;">Скрыть сумму</span>
+            </div>
+
+            <button class="final-btn" id="final-confirm-btn">Оплатить 0 ₸</button>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById('amount-input');
+        const btn = document.getElementById('pay-button');
+        const overlay = document.getElementById('overlay');
+        const sheet = document.getElementById('bottom-sheet');
+        const displayAmount = document.getElementById('display-amount');
+        const finalBtn = document.getElementById('final-confirm-btn');
+
+        // Активация кнопки при вводе
+        input.addEventListener('input', () => {
+            btn.disabled = !(parseFloat(input.value) > 0);
+        });
+
+        // Открытие шторки
+        btn.addEventListener('click', () => {
+            const val = input.value;
+            displayAmount.innerText = `${val} ₸`;
+            finalBtn.innerText = `Оплатить ${val} ₸`;
+            
+            overlay.classList.add('active');
+            sheet.classList.add('active');
+            
+            if (window.tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+        });
+
+        // Закрытие шторки
+        document.getElementById('close-sheet').addEventListener('click', () => {
+            overlay.classList.remove('active');
+            sheet.classList.remove('active');
+        });
+
+        // Финальный переход
+        finalBtn.addEventListener('click', () => {
+            // КЛЮЧЕВОЙ МОМЕНТ: Сохраняем сумму перед переходом
+            const amountValue = input.value;
+            localStorage.setItem('last_payment_amount', amountValue);
+
+            if (window.tg && tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+            
+            // Переходим на страницу успеха
+            window.location.href = "qr_succes.html";
+        });
+
+        // Автофокус при загрузке
+        window.onload = () => input.focus();
+    </script>
+</body>
+</html>

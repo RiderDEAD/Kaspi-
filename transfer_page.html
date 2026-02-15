@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Клиенту Kaspi</title>
+    <style>
+        :root { 
+            --main-font: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+            --kaspi-blue: #007bbd;
+            --bg-gray: #f2f2f7; 
+            --input-bg: #f2f2f4;
+            --kaspi-gold: #E2AD61;
+        }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; -webkit-user-select: none; }
+
+        body {
+            font-family: var(--main-font); margin: 0; background-color: var(--bg-gray);
+            height: 100vh; display: flex; flex-direction: column;
+            letter-spacing: -0.3px;
+        }
+
+        .top-section { background: white; display: flex; flex-direction: column; }
+
+        .header {
+            padding: calc(10px + env(safe-area-inset-top)) 16px 15px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        
+        .back-btn { font-size: 28px; color: #333; text-decoration: none; font-weight: 200; width: 30px; }
+        .header-title { 
+            font-size: 18px; font-weight: 500; 
+            color: #000; flex-grow: 1; text-align: center;
+        }
+        .header-spacer { width: 30px; }
+
+        .card-selector {
+            padding: 8px 16px 20px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        
+        .card-icon { 
+            width: 36px; height: 28px; background: var(--kaspi-gold); 
+            border-radius: 4px; margin-right: 14px; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .card-icon img { width: 17px; opacity: 0.9; }
+
+        .card-info { flex-grow: 1; font-size: 17px; color: #000; font-weight: 400; }
+        .card-balance { font-size: 17px; font-weight: 500; }
+
+        .bottom-section {
+            background: white; flex-grow: 1; margin-top: 10px;
+            display: flex; flex-direction: column;
+        }
+
+        .tab-nav {
+            display: flex; background: #ebebed;
+            border-radius: 9px; margin: 16px 16px 20px 16px; padding: 2px;
+        }
+        .tab-btn {
+            flex: 1; text-align: center; padding: 7px 0; font-size: 14px; 
+            font-weight: 400; border-radius: 7px; color: #333;
+            cursor: pointer; text-decoration: none;
+        }
+        .tab-btn.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 500; }
+
+        .input-group { padding: 0 16px; }
+        .input-box {
+            background: var(--input-bg);
+            border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .input-box input {
+            background: transparent; border: none; outline: none; font-size: 16px; width: 100%;
+            color: #000; font-family: var(--main-font); font-weight: 400;
+        }
+        .input-box input::placeholder { color: #8e8e93; }
+
+        .contact-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        #receiverCard {
+            background: var(--kaspi-gold); border-radius: 12px;
+            padding: 14px 16px; margin-bottom: 12px; color: white;
+            display: none; animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .receiver-name { 
+            font-size: 17px; font-weight: 500; border: none; background: transparent; 
+            color: white; width: 100%; outline: none; padding: 0;
+        }
+        .receiver-sub { font-size: 12px; opacity: 0.9; margin-top: 3px; font-weight: 400; }
+
+        .sum-input { font-size: 22px !important; font-weight: 500; color: #000; }
+        .currency { font-size: 19px; color: #000; margin-left: 5px; font-weight: 400; }
+
+        .quick-messages {
+            display: flex; gap: 8px; padding: 10px 16px; overflow-x: auto;
+        }
+        .msg-chip {
+            background: white; border: 0.5px solid #d1d1d6; border-radius: 18px;
+            padding: 7px 14px; font-size: 14px; color: #0089d0; white-space: nowrap;
+        }
+
+        .footer {
+            margin-top: auto; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)) 16px;
+        }
+        .btn-transfer {
+            background: var(--kaspi-blue); color: white; width: 100%; border: none;
+            border-radius: 12px; padding: 15px; font-size: 17px; 
+            font-weight: 500;
+            letter-spacing: -0.1px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .btn-transfer:active { background: #00669d; }
+    </style>
+</head>
+<body>
+
+    <div class="top-section">
+        <div class="header">
+            <a href="transfer_menu.html" class="back-btn">‹</a>
+            <div class="header-title">Клиенту Kaspi</div>
+            <div class="header-spacer"></div>
+        </div>
+
+        <div class="card-selector">
+            <div class="card-icon">
+                <img src="gold_mini.jpg" alt="" onerror="this.style.display='none'">
+            </div>
+            <div class="card-info">Kaspi Gold</div>
+            <div class="card-balance"><span id="userBalance">221 455,25</span> ₸</div>
+        </div>
+    </div>
+
+    <div class="bottom-section">
+        <div class="tab-nav">
+            <div class="tab-btn active">Телефон</div>
+            <div class="tab-btn">Карта</div>
+            <div class="tab-btn" onclick="location.href='qr.html'">Kaspi QR</div>
+        </div>
+
+        <div class="input-group">
+            <div class="input-box">
+                <input type="text" id="phoneInput" placeholder="" inputmode="tel" maxlength="18">
+                <div class="contact-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="#F14635" stroke-width="2"/>
+                        <circle cx="12" cy="10" r="3" stroke="#F14635" stroke-width="2"/>
+                        <path d="M7 18.5C7.5 16 9 14.5 12 14.5C15 14.5 16.5 16 17 18.5" stroke="#F14635" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div id="receiverCard">
+                <input type="text" class="receiver-name" id="receiverName" value="Имя Фамилия">
+                <div class="receiver-sub">Деньги поступят на карту Kaspi Gold</div>
+            </div>
+
+            <div class="input-box">
+                <input type="text" class="sum-input" id="sumInput" placeholder="0" inputmode="numeric">
+                <span class="currency">₸</span>
+            </div>
+
+            <div class="input-box">
+                <input type="text" placeholder="Сообщение получателю">
+                <div style="font-size: 11px; color: #8e8e93;">0/50</div>
+            </div>
+        </div>
+
+        <div class="quick-messages">
+            <div class="msg-chip">Рақмет!</div>
+            <div class="msg-chip">За обед</div>
+            <div class="msg-chip">Возвращаю :)</div>
+        </div>
+
+        <div class="footer">
+            <button class="btn-transfer" id="mainBtn">Перевести 0 ₸</button>
+        </div>
+    </div>
+
+    <script>
+    // Загружаем баланс
+    const balanceStr = localStorage.getItem('kaspi_gold_balance') || "221 455,25";
+    document.getElementById('userBalance').innerText = balanceStr.split(',')[0];
+
+    // Маска телефона
+    const phoneInput = document.getElementById('phoneInput');
+    phoneInput.addEventListener('input', function (e) {
+        let val = e.target.value.replace(/\D/g, '');
+        if (val.startsWith('7')) val = val.substring(1);
+        let res = "+7 (";
+        if (val.length > 0) res += val.substring(0, 3);
+        if (val.length >= 4) res += ") " + val.substring(3, 6);
+        if (val.length >= 7) res += " " + val.substring(6, 8);
+        if (val.length >= 9) res += " " + val.substring(8, 10);
+        
+        // Позволяем удалять
+        if (val.length === 0) {
+            e.target.value = "";
+        } else {
+            e.target.value = res;
+        }
+        
+        document.getElementById('receiverCard').style.display = val.length >= 3 ? 'block' : 'none';
+    });
+
+    // Маска суммы
+    const sumInput = document.getElementById('sumInput');
+    const mainBtn = document.getElementById('mainBtn');
+    sumInput.addEventListener('input', function() {
+        let cleanVal = this.value.replace(/\D/g, '');
+        if (cleanVal === "") {
+            mainBtn.innerText = "Перевести 0 ₸";
+            return;
+        }
+        let formatted = Number(cleanVal).toLocaleString('ru-RU');
+        this.value = formatted;
+        mainBtn.innerText = `Перевести ${formatted} ₸`;
+    });
+
+    // Сохранение данных
+    mainBtn.onclick = function() {
+        const finalSum = sumInput.value || "0";
+        const finalName = document.getElementById('receiverName').value || "Имя Фамилия";
+        
+        localStorage.setItem('last_sum', finalSum);
+        localStorage.setItem('last_name', finalName);
+        
+        window.location.href = 'transfer_conf.html';
+    };
+    </script>
+</body>
+</html>

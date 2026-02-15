@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Перевод совершен</title>
+
+    <style>
+        /* ===== SF PRO (ЛОКАЛЬНЫЕ ФАЙЛЫ) ===== */
+        @font-face {
+            font-family: 'SF Pro Text';
+            src: url('SFProText-Regular.ttf') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SF Pro Text';
+            src: url('SFProText-Semibold.ttf') format('truetype');
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SF Pro Display';
+            src: url('SFProText-Bold.ttf') format('truetype');
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        /* ===== ПЕРЕМЕННЫЕ ===== */
+        :root {
+            --font-text: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-display: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            --kaspi-blue: #0089d0;
+            --kaspi-green: #28cd41;
+            --bg-gray: #f2f2f7;
+            --text-main: #000;
+            --text-secondary: #8e8e93;
+        }
+
+        /* ===== RESET ===== */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            font-family: var(--font-text);
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: var(--bg-gray);
+            overflow: hidden;
+        }
+
+        /* ===== HEADER ===== */
+        .fixed-header {
+            background: #fff;
+            padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
+            text-align: center;
+            font-size: 17px;
+            font-weight: 500;
+            letter-spacing: -0.2px;
+            border-bottom: 0.5px solid #e5e5ea;
+        }
+
+        /* ===== CONTENT ===== */
+        .scrollable-content {
+            height: calc(100% - 70px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* ===== SUCCESS BLOCK ===== */
+        .success-container {
+            background: #fff;
+            padding: 24px 16px 32px;
+            text-align: center;
+        }
+
+        .check-icon {
+            width: 62px;
+            height: 62px;
+            margin: 0 auto 18px;
+            background: var(--kaspi-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .check-icon::after {
+            content: '';
+            width: 14px;
+            height: 26px;
+            border: solid #fff;
+            border-width: 0 4px 4px 0;
+            transform: rotate(45deg);
+            margin-top: -4px;
+        }
+
+        .status-text {
+            font-size: 21px;
+            font-weight: 400;
+            letter-spacing: -0.3px;
+            margin-bottom: 6px;
+        }
+
+        .amount-text {
+            font-family: var(--font-display);
+            font-size: 38px;
+            font-weight: 700;
+            letter-spacing: -0.6px;
+        }
+
+        /* ===== ACTIONS ===== */
+        .actions-list {
+            margin-top: 12px;
+        }
+
+        .action-item {
+            background: #fff;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 0.5px solid #e5e5ea;
+        }
+
+        .action-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .action-icon img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .action-info {
+            flex: 1;
+        }
+
+        .action-title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .action-sub {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .arrow {
+            font-size: 22px;
+            color: #c7c7cc;
+            margin-left: 10px;
+        }
+
+        /* ===== SWITCH ===== */
+        .switch-mock {
+            width: 44px;
+            height: 26px;
+            background: #ff3b30;
+            border-radius: 13px;
+            padding: 2px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .switch-mock::after {
+            content: '✓';
+            width: 22px;
+            height: 22px;
+            background: #fff;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 900;
+            color: #ff3b30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
+            background: var(--bg-gray);
+        }
+
+        .btn-main {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: var(--kaspi-blue);
+            color: #fff;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="fixed-header">Переводы</div>
+
+    <div class="scrollable-content">
+        <div class="success-container">
+            <div class="check-icon"></div>
+            <div class="status-text">Ваш перевод совершен</div>
+            <div class="amount-text"><span id="finalSum">0</span> ₸</div>
+        </div>
+
+        <div class="actions-list">
+            <div class="action-item" onclick="alert('Квитанция формируется...')">
+                <div class="action-icon">
+                    <img src="kb.png" onerror="this.parentElement.style.background='#f2f2f2'; this.parentElement.style.borderRadius='4px';">
+                </div>
+                <div class="action-info">
+                    <div class="action-title">Показать квитанцию</div>
+                    <div class="action-sub">Квитанция сохранена в Истории</div>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+
+            <div class="action-item">
+                <div class="action-icon">
+                    <img src="star.png" onerror="this.parentElement.style.background='#f2f2f2'; this.parentElement.style.borderRadius='4px';">
+                </div>
+                <div class="action-info">
+                    <div class="action-title">ТОО DV Shirin ДВ Ширин</div>
+                    <div class="action-sub">Сохранено в Частых</div>
+                </div>
+                <div class="switch-mock"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <button class="btn-main" onclick="location.href='transfer_menu.html'">Вернуться в Переводы</button>
+    </div>
+
+    <script>
+        window.onload = function() {
+            // Получаем сумму из localStorage
+            const savedAmount = localStorage.getItem('last_payment_amount');
+            const displayElement = document.getElementById('finalSum');
+            
+            if (savedAmount) {
+                // Форматируем число: 15000 -> 15 000
+                const formatted = Number(savedAmount).toLocaleString('ru-RU');
+                displayElement.innerText = formatted;
+            } else {
+                displayElement.innerText = '0';
+            }
+
+            // Вибрация успеха, если открыто в Telegram
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            }
+        };
+    </script>
+
+</body>
+</html>

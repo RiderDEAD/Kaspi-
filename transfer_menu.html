@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Переводы</title>
+    <style>
+        :root { --main-font: "SF Pro Display", -apple-system, sans-serif; }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; -webkit-user-select: none; }
+
+        body {
+            font-family: var(--main-font); margin: 0; background-color: #f2f2f7;
+            display: flex; flex-direction: column; height: 100vh;
+        }
+        nav.tab-bar {
+            background: #fff;
+            border-top: 0.5px solid #D1D1D6;
+            display: flex;
+            justify-content: space-around;
+            padding-bottom: env(safe-area-inset-bottom);
+            height: calc(60px + env(safe-area-inset-bottom));
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 100;
+        }
+
+        .tab-item {
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center; 
+            color: #8E8E93; 
+            text-decoration: none;
+            width: 20%;
+            padding-top: 6px;
+        }
+
+        .tab-item img {
+            width: 26px; 
+            height: 26px; 
+            object-fit: contain;
+            margin-bottom: 3px;
+        }
+
+        .tab-item span { font-size: 11px; font-weight: 500; }
+        .tab-item.active { color: #000; }
+
+        .header {
+            background: white; padding: calc(10px + env(safe-area-inset-top)) 16px 10px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        /* Исправленная кнопка */
+        .back-btn { font-size: 30px; color: #333; text-decoration: none; font-weight: 200; width: 30px; cursor: pointer; }
+        .header-title { font-size: 19px; font-weight: 600; flex-grow: 1; text-align: center; }
+        .header-spacer { width: 30px; }
+
+        .top-nav {
+            background: white; padding: 10px 16px 15px 16px; border-bottom: 0.5px solid #d1d1d6;
+        }
+        .tab-switcher { display: flex; background: #E3E3E8; border-radius: 8px; padding: 2px; }
+        .tab-switcher .tab-item-top { flex: 1; text-align: center; padding: 8px 0; font-size: 15px; font-weight: 500; border-radius: 7px; color: #333; text-decoration: none;}
+        .tab-switcher .tab-item-top.active { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        .menu-list { background: white; margin-top: 0; }
+        .menu-item {
+            display: flex; align-items: center; padding: 14px 16px;
+            border-bottom: 0.5px solid #f2f2f7; text-decoration: none; color: inherit;
+        }
+        .menu-item:active { background: #f5f5f7; }
+        .menu-icon { width: 28px; height: 28px; margin-right: 16px; object-fit: contain; }
+        .menu-text { flex-grow: 1; }
+        .menu-main { font-size: 17px; color: #000; display: block; }
+        .menu-sub { font-size: 13px; color: #8e8e93; }
+        .chevron { color: #c7c7cc; font-size: 20px; font-weight: 300; }
+
+        .section-title { padding: 25px 16px 10px 16px; font-size: 20px; font-weight: 700; color: #000; }
+        .frequent-list { background: white; margin-bottom: 100px; }
+        .freq-item {
+            display: flex; align-items: center; padding: 22px 28px;
+            border-bottom: 0.5px solid #f2f2f7;
+        }
+        .freq-avatar {
+            width: 33px; height: 25px; border-radius: 5px; background: #E2AD61;
+            margin-right: 14px; display: flex; align-items: center; justify-content: center;
+        }
+        .freq-avatar img { width: 15px; opacity: 0.9; }
+        .freq-name { font-size: 17px; flex-grow: 1; }
+        .dots { color: #c7c7cc; letter-spacing: 2px; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="back-btn" onclick="history.back()">‹</div>
+        <div class="header-title">Переводы</div>
+        <div class="header-spacer"></div>
+    </div>
+
+    <div class="top-nav">
+        <div class="tab-switcher">
+            <div class="tab-item-top active">Мои Переводы</div>
+            <div class="tab-item-top">История</div>
+        </div>
+    </div>
+
+    <div class="menu-list">
+        <a href="#" class="menu-item">
+            <img src="trans.png" class="menu-icon">
+            <div class="menu-text"><span class="menu-main">Между своими счетами</span></div>
+            <span class="chevron">›</span>
+        </a>
+        <a href="transfer_page.html" class="menu-item">
+            <img src="https://img.icons8.com/ios/50/FF0000/user-male-circle.png" class="menu-icon">
+            <div class="menu-text">
+                <span class="menu-main">Клиенту Kaspi</span>
+                <span class="menu-sub">На карту Kaspi Gold</span>
+            </div>
+            <span class="chevron">›</span>
+        </a>
+        <a href="#" class="menu-item">
+            <img src="https://img.icons8.com/ios/50/FF0000/card-exchange.png" class="menu-icon">
+            <div class="menu-text">
+                <span class="menu-main">Карта другого банка</span>
+                <span class="menu-sub">С карты на карту</span>
+            </div>
+            <span class="chevron">›</span>
+        </a>
+        <a href="#" class="menu-item">
+            <img src="qr.png" class="menu-icon">
+            <div class="menu-text">
+                <span class="menu-main">Kaspi QR</span>
+                <span class="menu-sub">Сканируйте и платите</span>
+            </div>
+            <span class="chevron">›</span>
+        </a>
+    </div>
+
+    <div class="section-title">Частые</div>
+    <div class="frequent-list">
+        <div class="freq-item">
+            <div class="freq-avatar"><img src="gold_mini.jpg"></div>
+            <div class="freq-name">Миржан И.</div>
+            <div class="dots">...</div>
+        </div>
+        <div class="freq-item">
+            <div class="freq-avatar"><img src="gold_mini.jpg"></div>
+            <div class="freq-name">Бахтияр Н.</div>
+            <div class="dots">...</div>
+        </div>
+    </div>
+
+    <nav class="tab-bar">
+        <a href="index.html" class="tab-item active"><img src="home_on.png"><span>Главная</span></a>
+        <a href="auth.html?to=qr" class="tab-item"><img src="qr_bottom.png"><span>Kaspi QR</span></a>
+        <a href="#" class="tab-item"><img src="chat.png"><span>Сообщения</span></a>
+        <a href="#" class="tab-item"><img src="menu.png"><span>Сервисы</span></a>
+    </nav>
+
+</body>
+</html>

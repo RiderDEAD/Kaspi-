@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Подтверждение</title>
+    <style>
+        :root { 
+            --main-font: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+            --kaspi-blue: #0082CA;
+            --bg-gray: #f2f2f7; 
+            --kaspi-gold: #E2AD61;
+            --border-color: #e5e5ea;
+        }
+
+        * { 
+            -webkit-tap-highlight-color: transparent; 
+            box-sizing: border-box; 
+            -webkit-user-select: none; 
+        }
+
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: var(--main-font); background-color: var(--bg-gray);
+            display: flex; flex-direction: column;
+            letter-spacing: -0.2px;
+        }
+
+        /* ШАПКА */
+        .header {
+            background: white;
+            padding: calc(10px + env(safe-area-inset-top)) 16px 12px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 0.5px solid var(--border-color);
+        }
+        .back-btn { font-size: 30px; color: #333; text-decoration: none; font-weight: 300; width: 30px; margin-top: -4px; }
+        .header-title { font-size: 17px; font-weight: 500; color: #000; flex-grow: 1; text-align: center; }
+        .header-spacer { width: 30px; }
+
+        /* СЕКЦИИ С БЕЛЫМ ФОНОМ */
+        .section {
+            background: white;
+            margin-top: 12px;
+            border-top: 0.5px solid var(--border-color);
+            border-bottom: 0.5px solid var(--border-color);
+        }
+
+        .row {
+            padding: 14px 16px;
+            display: flex; align-items: center;
+            position: relative;
+        }
+
+        /* Тонкая линия внутри секции */
+        .row.divider::after {
+            content: '';
+            position: absolute; bottom: 0; left: 66px; right: 0;
+            height: 0.5px; background: var(--border-color);
+        }
+
+        .icon-box { 
+            width: 36px; height: 26px; background: var(--kaspi-gold); 
+            border-radius: 5px; margin-right: 14px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .icon-box img { width: 18px; }
+
+        .info { flex-grow: 1; }
+        .label { font-size: 13px; color: #8e8e93; margin-bottom: 2px; }
+        .val-text { font-size: 16px; color: #000; font-weight: 400; }
+        .val-bold { font-size: 16px; font-weight: 500; color: #000; }
+
+        /* ДЕТАЛИ */
+        .detail-row {
+            display: flex; justify-content: space-between;
+            padding: 12px 16px; font-size: 15px;
+        }
+        .detail-label { color: #8e8e93; }
+        .detail-val { color: #000; font-weight: 400; }
+        .detail-val.bold { font-weight: 600; }
+        .detail-val.green { color: #4cd964; font-weight: 500; }
+
+        /* ФУТЕР ПРИЖАТЫЙ ВНИЗ */
+        .footer {
+            margin-top: auto;
+            background: var(--bg-gray);
+            padding: 16px 16px calc(12px + env(safe-area-inset-bottom)) 16px;
+        }
+        .btn-confirm {
+            background: var(--kaspi-blue); color: white; width: 100%; border: none;
+            border-radius: 10px; padding: 14px; font-size: 16px; 
+            font-weight: 500;
+        }
+        .btn-confirm:active { background: #0071b0; opacity: 0.9; }
+
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div class="header">
+        <a href="javascript:history.back()" class="back-btn">‹</a>
+        <div class="header-title">Клиенту Kaspi</div>
+        <div class="header-spacer"></div>
+    </div>
+
+    <div class="section">
+        <div class="row divider">
+            <div class="icon-box"><img src="gold_mini.jpg" alt=""></div>
+            <div class="info">
+                <div class="label">Откуда</div>
+                <div class="val-text">Kaspi Gold</div>
+            </div>
+            <div class="val-bold"><span id="myBalance">0</span> ₸</div>
+        </div>
+
+        <div class="row">
+            <div class="icon-box"><img src="gold_mini.jpg" alt=""></div>
+            <div class="info">
+                <div class="label">Куда</div>
+                <div id="targetName" class="val-text">Имя Фамилия</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="detail-row">
+            <div class="detail-label">Сумма перевода</div>
+            <div class="detail-val bold"><span id="transferSum">0</span> ₸</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Комиссия</div>
+            <div class="detail-val green">0 ₸</div>
+        </div>
+        <div style="height: 0.5px; background: var(--border-color); margin-left: 16px;"></div>
+        <div class="detail-row">
+            <div class="detail-label">Сумма списания</div>
+            <div class="detail-val bold"><span id="totalSum">0</span> ₸</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <button class="btn-confirm" onclick="processTransfer()">
+            Подтвердить и перевести <span id="btnSum">0</span> ₸
+        </button>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const sum = localStorage.getItem('last_sum') || "0";
+            const name = localStorage.getItem('last_name') || "Имя Фамилия";
+            const balance = localStorage.getItem('kaspi_gold_balance') || "716,65";
+
+            // Заполняем баланс (берем до запятой для красоты)
+            document.getElementById('myBalance').innerText = balance;
+            
+            // Заполняем имя
+            document.getElementById('targetName').innerText = name;
+            
+            // Заполняем все суммы
+            document.getElementById('transferSum').innerText = sum;
+            document.getElementById('totalSum').innerText = sum;
+            document.getElementById('btnSum').innerText = sum;
+        };
+
+        function processTransfer() {
+            window.location.href = 'transfer_success.html';
+        }
+    </script>
+</body>
+</html>
