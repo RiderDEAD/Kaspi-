@@ -28,8 +28,14 @@
         /* --- Content --- */
         .main-content { padding: 20px 16px; flex-grow: 1; }
         .label { color: var(--text-secondary); font-size: 14px; margin-bottom: 4px; display: block; }
-        .seller-section { margin-bottom: 30px; }
-        .seller-name { font-size: 17px; font-weight: 500; }
+        
+        .seller-section { margin-bottom: 20px; }
+        /* Стилизуем инпут продавца под обычный текст */
+        #seller-input {
+            width: 100%; border: none; outline: none; padding: 0;
+            font-size: 17px; font-weight: 500; font-family: inherit;
+            color: var(--text-main); border-bottom: 1px dashed #ccc;
+        }
 
         .input-section { background-color: var(--kaspi-gray); border-radius: 12px; padding: 12px 16px; }
         .amount-input-wrapper { display: flex; align-items: baseline; }
@@ -100,7 +106,7 @@
     <div class="main-content">
         <div class="seller-section">
             <span class="label">Продавец</span>
-            <div class="seller-name">ТОО DV Shirin ДВ Ширин</div>
+            <input type="text" id="seller-input" placeholder="Введите название ТОО/ИП">
         </div>
         <div class="input-section">
             <span class="label">Сумма</span>
@@ -130,7 +136,7 @@
 
             <div class="info-row">
                 <span class="label">Продавец</span>
-                <span style="font-weight: 500; text-align: right;">ТОО DV Shirin ДВ Ширин</span>
+                <span id="display-seller" style="font-weight: 500; text-align: right;">-</span>
             </div>
             <div class="info-row">
                 <span class="label">Сумма</span>
@@ -156,22 +162,32 @@
     </div>
 
     <script>
+        const sellerInput = document.getElementById('seller-input');
         const input = document.getElementById('amount-input');
         const btn = document.getElementById('pay-button');
         const overlay = document.getElementById('overlay');
         const sheet = document.getElementById('bottom-sheet');
         const displayAmount = document.getElementById('display-amount');
+        const displaySeller = document.getElementById('display-seller');
         const finalBtn = document.getElementById('final-confirm-btn');
 
-        // Активация кнопки при вводе
-        input.addEventListener('input', () => {
-            btn.disabled = !(parseFloat(input.value) > 0);
-        });
+        // Проверка заполнения обоих полей
+        function validate() {
+            const hasAmount = parseFloat(input.value) > 0;
+            const hasSeller = sellerInput.value.trim().length > 0;
+            btn.disabled = !(hasAmount && hasSeller);
+        }
+
+        input.addEventListener('input', validate);
+        sellerInput.addEventListener('input', validate);
 
         // Открытие шторки
         btn.addEventListener('click', () => {
             const val = input.value;
+            const seller = sellerInput.value;
+            
             displayAmount.innerText = `${val} ₸`;
+            displaySeller.innerText = seller; // Показываем в шторке
             finalBtn.innerText = `Оплатить ${val} ₸`;
             
             overlay.classList.add('active');
@@ -188,20 +204,24 @@
 
         // Финальный переход
         finalBtn.addEventListener('click', () => {
-            // КЛЮЧЕВОЙ МОМЕНТ: Сохраняем сумму перед переходом
-            const amountValue = input.value;
-            localStorage.setItem('last_payment_amount', amountValue);
+            // СОХРАНЯЕМ ВСЁ В LOCALSTORAGE
+            localStorage.setItem('last_payment_amount', input.value);
+            localStorage.setItem('last_seller_name', sellerInput.value);
 
             if (window.tg && tg.HapticFeedback) {
                 tg.HapticFeedback.notificationOccurred('success');
             }
             
-            // Переходим на страницу успеха
             window.location.href = "qr_succes.html";
         });
 
-        // Автофокус при загрузке
-        window.onload = () => input.focus();
+        window.onload = () => {
+            // Пытаемся подгрузить старое название продавца, если оно было
+            const savedSeller = localStorage.getItem('last_seller_name');
+            if (savedSeller) sellerInput.value = savedSeller;
+            
+            input.focus();
+        };
     </script>
 </body>
 </html>
