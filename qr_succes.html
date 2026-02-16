@@ -113,7 +113,7 @@
             <div class="info-grid">
                 <div>
                     <div class="info-label">Продавец</div>
-                    <div class="info-value">ТОО DV Shirin ДВ Ширин</div>
+                    <div class="info-value" id="success-seller-name">Загрузка...</div>
                 </div>
                 <div>
                     <div class="info-label">Дата покупки</div>
@@ -159,7 +159,11 @@
             const formatted = Number(savedAmount).toLocaleString('ru-RU');
             document.getElementById('finalSum').innerText = formatted;
 
-            // 2. Вывод текущей даты (15 февраля, 21:48)
+            // 2. Вывод продавца (НОВОЕ)
+            const savedSeller = localStorage.getItem('last_seller_name') || "Продавец не указан";
+            document.getElementById('success-seller-name').innerText = savedSeller;
+
+            // 3. Вывод текущей даты (15 февраля, 21:48)
             const now = new Date();
             const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
             const day = now.getDate();
@@ -169,7 +173,7 @@
             
             document.getElementById('currentDate').innerText = `${day} ${month}, ${hours}:${minutes}`;
 
-            // 3. Haptic
+            // 4. Haptic
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
             }
